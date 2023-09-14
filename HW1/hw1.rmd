@@ -1,0 +1,24 @@
+---
+title: "HW1 - <Name here>"
+output: 
+  html_document:
+    css: "styles.css"   
+---
+
+```{r}
+# This is an R code block, you can write R code and it will be executed.
+data <- c(1,2,3,4,5)
+
+data[5:1]
+```
+
+
+In order to get a usable output you will need to run the command below:
+Rscript -e "rmarkdown::render('hw1.rmd')"
+
+This will yield a file called hw1.html, which can be viewed in a web browser
+
+You will also need the following packages installed:
+install.packages(c("rmarkdown", "knitr", "pandoc"))
+
+By default, I have included a styles.css file, which makes the output prettier. You may edit that file without any css knowledge.

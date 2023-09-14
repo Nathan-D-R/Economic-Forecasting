@@ -1,0 +1,59 @@
+:root {
+  --darkest: #222;
+  --darker: #333;
+  --dark: #444;
+  --light: #555;
+  --lighter: #666;
+  --lightest: #ddd;
+}
+
+body {
+  background-color: var(--darkest);
+  color: var(--lighter);
+}
+
+h1 {
+  color: var(--lightest);
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid var(--lighter);
+  border-radius: 5px;
+  background-color: var(--dark);
+  padding: 5px;
+}
+
+pre::before {
+  content: "R Input: ";
+  font-weight: bold;
+  color: var(--dark);
+  display: block;
+}
+
+pre {
+  background-color: var(--lightest);
+}
+
+pre:not([class])::before {
+  content: "R Output: ";
+  font-weight: bold;
+  color: var(--darker);
+  display: block;
+}
+
+pre:not([class]) {
+  background-color: var(--lightest);
+}
+
+img {
+  border: 5px solid var(--lighter)
+  border-radius: 5px;
+  width: 100%;
+}
+
+li, p {
+  border: 1px solid var(--lighter);
+  border-radius: 5px;
+  margin: 5px;
+  background-color: var(--lightest);
+  padding: 5px;
+}

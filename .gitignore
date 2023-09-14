@@ -1,4 +1,9 @@
-# History files
+# Homework
+index.*
+knit.sh
+style.css
+
+#History files
 .Rhistory
 .Rapp.history
 

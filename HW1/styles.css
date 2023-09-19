@@ -1,25 +1,43 @@
 :root {
-  --darkest: #222;
+  --darkest: #000;
   --darker: #333;
-  --dark: #444;
-  --light: #555;
-  --lighter: #666;
-  --lightest: #ddd;
+  --dark: #666;
+  --light: #999;
+  --lighter: #ccc;
+  --lightest: #fff;
 }
+/*0123456789abcdef*/
 
 body {
-  background-color: var(--darkest);
-  color: var(--lighter);
+  background-image: url("https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1587&q=80");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+  color: var(--darkest);
+  font-weight bold;
 }
 
 h1 {
-  color: var(--lightest);
+  color: var(--darkest);
   font-weight: 700;
+  text-align: center;
+  border: 1px solid var(--lightest);
+  border-radius: 5px;
+  background-color: var(--lightest);
+  padding: 5px;
+  opacity: 0.8;
+}
+
+h2 {
+  color: var(--lightest);
+  font-weight: bold;
   text-align: center;
   border: 1px solid var(--lighter);
   border-radius: 5px;
-  background-color: var(--dark);
+  background-color: var(--lighter);
   padding: 5px;
+  opacity: 0.8;
 }
 
 pre::before {
@@ -29,8 +47,9 @@ pre::before {
   display: block;
 }
 
-pre {
+pre{
   background-color: var(--lightest);
+  opacity: 0.8;
 }
 
 pre:not([class])::before {
@@ -42,18 +61,22 @@ pre:not([class])::before {
 
 pre:not([class]) {
   background-color: var(--lightest);
+  opacity: 0.8;
 }
 
 img {
   border: 5px solid var(--lighter)
   border-radius: 5px;
   width: 100%;
+  opacity: 1;
+  padding: 5px;
 }
 
-li, p {
-  border: 1px solid var(--lighter);
-  border-radius: 5px;
+p {
   margin: 5px;
   background-color: var(--lightest);
   padding: 5px;
+  opacity: 0.8;
+  border: 1px solid var(--lightest);
+  border-radius: 5px;
 }

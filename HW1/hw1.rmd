@@ -22,3 +22,16 @@ You will also need the following packages installed:
 install.packages(c("rmarkdown", "knitr", "pandoc"))
 
 By default, I have included a styles.css file, which makes the output prettier. You may edit that file without any css knowledge.
+
+formatting outside of code blocks is done using markdown syntax.
+
+# Header 1
+## Header 2
+(header 1 is a large header, header 2 is a smaller header)
+*italics*
+**Bold**
+
+\ = newline
+
+ex. This is a line\
+This is a new line

@@ -1,6 +1,6 @@
 # Economic Forecasting
 
-## Code
+## Code:
 Code can be accessed by clicking the folder icons above. Code files end with the .r extension.
 
 Please note that for these files to work, the code has to be in the same directory as the data files.

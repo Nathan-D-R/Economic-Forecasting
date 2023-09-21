@@ -7,7 +7,7 @@ output:
 
 ```{r}
 # This is an R code block, you can write R code and it will be executed.
-data <- c(1,2,3,4,5)
+data <- c(1, 2, 3, 4, 5)
 
 data[5:1]
 ```

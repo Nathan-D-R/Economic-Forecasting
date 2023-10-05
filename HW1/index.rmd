@@ -1,0 +1,310 @@
+---
+title: "HW1 - Nathan Riley"
+output: 
+html_document:
+css: "style.css"   
+---
+
+# Introduction to R
+
+## Steps 1 & 2
+
+```{r}
+# Step 1
+# Create a scalar named "x" that calculates
+# (((12000 * 45) - 10) / 5000) * 2^3. What is the answer?
+
+x <- (((12000 * 45) - 10) / 5000) * 2^3
+paste("The answer is", round(x, dig = 2))
+
+# Step 2
+# Create a character/string vector that include you name, where your first name is the first element of the vector and your last name is the second element.
+
+name <- c("Nathan", "Riley")
+paste("My name is", name[1], name[2])
+```
+
+## Step 3
+```{r}
+# Step 3
+# Load the data into R.
+
+unrate <- read.csv("Unemployment Rate.csv")
+sales <- read.csv("Total Vehicle Sales.csv")
+
+# Merge data
+data <- merge(unrate, sales, by = "DATE")
+head(data)
+
+# Rename columns to date, sales, and unrate
+colnames(data) <- c("DATE", "UNRATE", "SALES")
+head(data)
+```
+
+## Steps 4-7
+```{r}
+# Step 4
+# What is the mean unemployment rate over this period?
+
+q4 <- mean(data$UNRATE)
+q4 <- formatC(q4, digits = 2, format = "f")
+paste("Mean of unemployment rate is ", q4, "%", sep = "")
+
+# Step 5
+# What is the standard deviation of the unemployment rate over this period?
+
+q5 <- sd(data$UNRATE)
+q5 <- formatC(q5, digits = 2, format = "f")
+paste("Standard Deviation of unemployment rate is ", q5, "%", sep = "")
+
+# Step 6
+# What is the mean monthly total vehicle sales over this period? Specify units.
+
+q6 <- mean(data$SALES) # Thousands of units
+q6 <- formatC(q6, digits = 2, format = "f", big.mark = ",")
+paste("Average monthly vehicle sales is", q6, "Thousand Units")
+
+# Step 7
+# What is the standard deviation of monthly total vehicle sales over this period?
+
+q7 <- sd(data$SALES)
+q7 <- formatC(q7, digits = 2, format = "f", big.mark = ",")
+paste("Standard deviation of monthly vehicle sales is", q7, "Thousand Units")
+```
+
+## Steps 8-10
+```{r}
+# Step 8
+# Create a scatterplot with total vehicle sales on the X-axis and the unemployment rate on the Y-axis.
+# Label the axes and give the graph a title.
+plot(data$SALES, # X
+     data$UNRATE, # Y
+     main = "Unemployment Rate vs. Total Vehicle Sales",
+     xlab = "Total Vehicle Sales (Thousands)",
+     ylab = "Unemployment Rate (%)",
+     sub = "UNRATENSA and TOTALNSA from FRED, 2000/1/01-2023/7/1",
+     col = "slateblue1",
+     pch = 16,
+)
+
+# Step 9
+# Estimate a simple linear regression model where the unemployment reate is the dependent variable and the total vehicle sales is the explanatory variable.
+# Display the output (ie., coefficients, t-values, p-values, R², etc.)
+# What is your interpretation of the output.
+
+q9 <- lm(data$UNRATE ~ data$SALES)
+summary(q9)
+
+# Step 10
+# Add the regression line to the scatterplot.
+
+abline(q9,
+  col = "darkslateblue",
+  lwd = 3,
+  lty = 2
+)
+```
+
+**Q9: What is your interpretation of the output?**\
+**A:** I would interpret the model as follows:\
+Total Vehicle Sales is a highly significant regressor with a p-value of 2.2e-16.\
+The multiple and adjusted R² are both moderate at 0.313 and 0.3105, respectively. These values indicate that 31% of the variation in unemployment rate can be explained by the variation in total vehicle sales. This is a moderately strong relationship.\
+The coefficient and intecept estimate that if TVS is 0, unemployment is 12.22%, for every thousand vehicles sold, unemployment decreases by 0.0048%.
+
+## Steps 11 & 12
+```{r}
+# Step 11
+# What is the correlation of the unemployment rate and total vehicle sales?
+# Is this strong or weak? Positive or Negative?
+
+q11 <- round(cor(data$UNRATE, data$SALES), dig = 2)
+q11
+```
+**Q11. What is the correlation of the unemployment rate and total vehicle sales?**\
+**Is this strong or weak? Positive or negative?**\
+**A:** The correlation is -0.56, indicating a mild inverse relationship between the variables. (As unrate rises vehicle sales decline and vice versa)
+
+**Q12. Do changes in total vehicle sales cause changes in the national unemployment rate?**\
+**A:** Probably not. Correlation does not imply causation.
+
+## Step 13
+```{r}
+# Step 13
+# Find another data series that you think might explain the unemployment rate.
+# Import it into R, and estimate a multiple regression model with the unemployment rate as the dependent variable, total vehicle sales as one of the explanatory variables, and your new variable as another explanatory variable.
+# Show and interpret the output.
+
+pce <- read.csv("Personal Consumption Expenditures.csv")
+data <- merge(data, pce, by = "DATE")
+
+colnames(data[4]) <- "PCE"
+
+head(data) # DATE UNRATE SALES PCE
+
+q13a <- lm(data$UNRATE ~ data$SALES + data$PCE)
+q13b <- lm(data$UNRATE ~ data$PCE)
+
+summary(q13a)
+summary(q13b)
+```
+**Q13: Show and interpret your output.**\
+**A:** The relationship between Total Vehicle Sales and Unemployment Rate are correlated, but it is unlikely TVS directly causes UR. On a large scale though, lack of consumption can cause unemployment if there is less demand for labor. As such, I chose Personal Consumption Expenditures (PCE).\
+All variables in this regression are highly significant, and R² is 0.44. This means that 44% of the variation in unemployment rate can be explained by the variation in total vehicle sales and personal consumption expenditures. The R² value is respectable for only two variables. PCE is less significant than TVS, with an R² of 0.26, which might indicate that the auto industry is less sticky than other industries. It is also worthwhile to note that TVS + PCE can explain more error together than they can individually.
+
+
+## Step 14
+```{r}
+# Now, use the ts() function to create new variables for the unemployment rate and total vehicle sales, where each is stored as a time-series object.
+tvm_ts <- ts(data$SALES, start = c(2000, 1), end = c(2023, 7), frequency = 12)
+
+ue_ts <- ts(data$UNRATE, start = c(2000, 1), end = c(2023, 7), frequency = 12)
+
+# Step 14:
+# Plot each series individually (as a line graph, with labeled axes and a title). What do you notice?
+
+plot(tvm_ts,
+    main = "Total Vehicle Sales",
+    xlab = "Date",
+    ylab = "Total Vehicle Sales (Thousands)",
+    col = "slateblue1",
+    pch = 16,
+    type = "l"
+)
+
+plot(ue_ts, # X
+    main = "Unemployment Rate",
+    xlab = "Date",
+    ylab = "Unemployment Rate (%)",
+    col = "slateblue1",
+    pch = 16, # Marker Shape
+    type = "l"
+)
+```
+**Q14: Plot each series individually (as a line graph, with labeled axes and a title). What do you notice?**\
+**A:** I notice the unemployment rate and total vehicle sales are a rough inversion of each other, which makes sense given the correlation of -0.56. I also notice that both graphs are quite bumpy due to random variations, which makes it harder to determine trends.
+
+
+## Step 15
+```{r}
+# Step 15:
+# For each, plot the annual series (using the aggregate() function)
+# What do you notice?
+
+# Plot Total Vehicle Sales
+plot(aggregate(tvm_ts, FUN = sum),
+  main = "Total Vehicle Sales (Annual)",
+  xlab = "Year",
+  ylab = "Total Vehicle Sales (Thousands)",
+  col = "slateblue1",
+  pch = 16,
+  type = "l"
+)
+
+plot(aggregate(ue_ts, FUN = sum),
+  main = "Unemployment Rate (Annual)",
+  xlab = "Year",
+  ylab = "Unemployment Rate (%)",
+  col = "slateblue1",
+  pch = 16,
+  type = "l"
+)
+
+```
+**Q15: For each, plot the annual series (using the aggregate() function). What do you notice?**\
+**A:** I notice that the annual series are much smoother than the monthly series. This is because the random variations are averaged out over the course of the year. I also notice that the unemployment rate and total vehicle sales have a clearer inverse relationship when aggregated by year.
+
+## Step 16
+```{r}
+# Step 16
+# For each, create a boxplot showing the seasonal component.
+# What do you notice?
+
+boxplot(tvm_ts ~ cycle(tvm_ts),
+  main = "Total Vehicle Sales (Seasonal)",
+  xlab = "Month",
+  ylab = "Total Vehicle Sales (Thousands)",
+  col = "slateblue1"
+)
+
+boxplot(ue_ts ~ cycle(ue_ts),
+  main = "Unemployment Rate (Seasonal)",
+  xlab = "Month",
+  ylab = "Unemployment Rate (%)",
+  col = "slateblue1"
+)
+```
+
+
+**Q16: For each, create a boxplot showing the seasonal component. What do you notice?**\
+**A:** I notice that the seasonal component of total vehicle sales is much more pronounced than that of the unemployment rate. This is likely due to the fact that the unemployment rate is a macroeconomic indicator, and is therefore less affected by seasonal variations. I would also like to note that the more pronounced seasonal component of total vehicle sales is likely because of the good weather in the spring, summer, and fall months, decreasing overall in the winter. December is the exception, and actually ranks as one of the higher months for vehicle sales, probably because of promotions that dealerships run around the holidays.
+
+## Step 17
+```{r}
+# Step 17
+# For each, create a figure that shows plots of the observed series’ decomposition into the trend, seasonal, and random components of the observed data.
+
+ue_decomp <- decompose(ue_ts)
+tvs_decomp <- decompose(tvm_ts)
+
+plot(ue_decomp,
+  col = "slateblue1",
+  lw = 2
+)
+plot(tvs_decomp,
+  col = "slateblue1",
+  lw = 2
+)
+```
+
+## Step 18
+**Q18. For each of the examples below, say how easy it will be to forecast them?\
+What conditions for forecast-ability do they meet?**
+
+**Q18a. Your homework grades in 427: Economic Forecasting**\
+**Difficulty: Easy to Moderate**\
+\
+**How well do we understand contributing factors?:**\
+- Lots of research has been done on best practices for students, whether a student does or does not follow these practices makes it fairly easy to forecast.\
+\
+**How much data is available?:**\
+- The data exists in some form on Brightspace through the statistics it tracks. The rest could be self reported. Transcript data could also be useful.\
+\
+**Can the forecasts themselves affect future values?:**\
+- Yes, if a student knows they are doing poorly, they may be more likely to drop the course.\
+\
+**Q18b. Quarterly US GDP**\
+**Difficulty: Moderate-Hard**\
+\
+**How well do we understand the contributing factors?:**\
+- GDP is based on a formula, so the contributing factors are clearly defined.
+- With that said, the formula has complex contributing factors and therefore there are many other factors that go into it.\
+\
+**How much data is avaliable?:**\
+- There is a lot of data available, and it is generally easy to find.\
+- The data also tends to be high quality, as it is collected by the government.\
+- However, the data is often latent, a few months behind, and is subject to revision.\
+\
+**Can the forecasts themselves affect future values?:**\
+- Yes, the forecast can change any one of the contributing factors depending on the forecast.\
+- For example, if the forecast is for a recession, consumers may be more likely to save and less likely to spend, which would decrease GDP.\
+
+**18c. S&P 500 daily fluctuations**\
+**Difficulty: Hard**\
+\
+**How well do we understand the factos that contribute to it?:**\
+- Generally speaking, we understand the factors that contribute to the S&P 500 in the long term, but not the daily fluctuations.\
+- The daily fluctuations are based on investor sentiment, which is difficult to measure.\
+\
+**How much data is available?:**\
+- For the data that is plausable to collect, there is a lot of data available.\
+- However, there is a lot of data that is not plausable to collect, such as investor sentiment.\
+- The data that does exits is generally high quality, as it is collected by large institutions.\
+\
+**Can the forecasts themselves affect future values?:**\
+- Depending on who is publishing the forecast, it could affect the market.\
+- Due to the wide array of forecasts, and general unreliablilty of them in the short, and even long term, no forecast has a significant impact on the market.\
+- However, if a forecast is published by a large institution, it could have a small-moderate impact on the market.\
+
+## Step 19:
+**Write a general explanatory model that we can use to forecast US GDP (in the form of USGPD-f(...)), using multiple variables and multiple time periods.**\
+**A:** *US_GDP<small>(t-1)</small> = f(US_GDP<small>t</small>, Consumer Spending, Investment, Government Spending, Net Exports)*

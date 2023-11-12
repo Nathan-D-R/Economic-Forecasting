@@ -1,0 +1,286 @@
+---
+title: "HW3 - Nathan Riley"
+output: 
+  html_document:
+    css: "styles.css"   
+---
+
+## Load & Exploratory [1-2]
+
+**1. Plot the series. Label the axes and give it a title.**
+```{r}
+realgdp <- read.csv("./Data/realgdp.csv")
+head(realgdp)
+names(realgdp) <- c("Date", "REALGDP")
+realgdp.ts <- ts(realgdp$REALGDP, start = c(2002, 1), frequency = 4)
+
+plot(
+  realgdp.ts,
+  main = "Real GDP",
+  ylab = "Billions of Chained 2009 Dollars",
+  xlab = "Year"
+)
+```
+
+**2. Is there seasonality? In what quarter is GDP typically the highest? In what quarter is it typically the lowest?**\
+*There is seasonality as we can see when it is decomposed.\
+It seems that GDP is highest in Q4 every year and lowest in Q1*
+
+```{r}
+realgdp.dc <- decompose(realgdp.ts)
+
+plot(realgdp.dc)
+
+boxplot(realgdp.dc$seasonal ~ cycle(realgdp.ts))
+```
+
+## AR [3-5]
+**3. Plot the ACF and PACF of the series and interpret. Based on the graphs, how
+many lags should we use if we fit an AR(p) model to the data?**\
+*ACF slopes down steadily over time, falling below the threshold at around lag 5/6.\
+PACF falls immediately, with a spike just beyond lag 1 that exceeds the threshold and some additional smaller ones later that do not.\ 
+I would argue that we should use 1 lag since the last significant spike lies just after it.*
+
+```{r}
+acf(realgdp.ts, lag.max = 24)
+pacf(realgdp.ts, lag.max = 24)
+```
+
+**4. Using the “arima” function (with the option method="ML" for maximum 
+likelihood estimation), manually determine the best AR(p) model for the data, 
+based on the AIC, for all models with 𝑝𝑝 ≤ 6. Show all of your steps in your 
+typed answers. Report the order p, the values of all coefficients, and the AIC 
+for the best model.**
+
+```{r}
+for (p in 0:6) {
+  print(
+    paste("p=", p, " - ",
+      formatC(
+        arima(realgdp.ts, order = c(p, 0, 0), method = "ML")$aic,
+        digits = 2, format = "f"
+      ),
+      sep = ""
+    ),
+    quote = FALSE
+  )
+}
+```
+
+**Q4: Report the order p, the values of all coefficients, and the AIC 
+for the best model**\
+*A: The best model I found was p=5 with an aic of 1,034.34.\
+The full results are below:*
+
+```{r}
+Q4 <- arima(realgdp.ts, order = c(5, 0, 0), method = "ML")
+Q4
+```
+
+**5. Analyze the correlogram of the residuals for the best version of the model from #4.**\
+*A: It would appear that there is only one line at lag 1 that exceeds the threshold, indicating this is insignificant white noise left over. Arguably, there might be a second line at lag 2, but this still looks like white noise.*
+
+```{r}
+acf(residuals(Q4))
+```
+
+## MA [6-7]
+**6. Using the “arima” function (with the option method="ML" for maximum
+likelihood estimation), manually determine the best MA(q) model for the data, 
+based on the AIC, for all models with 𝑞𝑞 ≤ 12. Show all of your steps in your 
+typed answers. Report the order q, the values of all coefficients, and the 
+AIC for the best model.**
+
+```{r}
+for (q in 0:12) {
+  print(
+    paste("q=", q, " - ",
+      formatC(
+        arima(realgdp.ts, order = c(0, 0, q), method = "ML")$aic,
+        digits = 2, format = "f"
+      ),
+      sep = ""
+    ),
+    quote = FALSE,
+  )
+}
+```
+
+**Q6: Report the order q, the values of all coefficients, and the AIC 
+for the best model**\
+*A: The best model I found was q=11 with an aic of 1076.31.\
+The full results are below:*
+
+
+```{r}
+Q6 <- arima(realgdp.ts, order = c(0, 0, 11), method = "ML")
+Q6
+
+```
+
+**7. Analyze the correlogram of the residuals for the best version of the model from #6.**\
+*A: The correlogram has 3 (almost 4) spikes on the year mark, which stick above the threshold. This indicates to me that this is more than white noise.*
+
+
+```{r}
+acf(residuals(Q6))
+```
+
+## ARMA [8-9]
+**8. Use the “auto.arima” function to determine the best ARMA(p,q) model for the
+data. To get auto.arima to match the results of the “arima” function, use the appropriate
+values of the “d=…” option and “seasonal=…” option, plus these options: ic=“aic”,
+approximation=FALSE, trace=TRUE, stepwise=FALSE, and method=“ML”. Report the
+order (p,q), the values of all coefficients, and the AIC for the best model.**
+
+```{r}
+library(forecast)
+Q8 <- auto.arima(realgdp.ts,
+  d = 0,
+  seasonal = FALSE,
+  ic = "aic",
+  approximation = FALSE,
+  trace = TRUE,
+  stepwise = FALSE,
+  method = "ML"
+)
+```
+
+**8. Report the order (p,q), the values of all coefficients, and the AIC for the best model.**\
+*The order is {0,0,4} with non-zero mean and the aic is 1147.37.\
+Full results below:*
+
+```{r}
+Q8
+```
+
+**9. Analyze the correlogram of the residuals for the best version of the model from #8.**\
+*A: This correlogram is the worst yet, with nearly every line above the threshold, and an AIC greater than {5, 0, 0} and {0, 0, 11}. This is not a great model.*
+
+
+```{r}
+acf(residuals(Q8))
+```
+
+## Non-Seasonal ARIMA [10-11]
+**10. Use the “auto.arima” function to determine the best ARIMA(p,d,q) model for the
+data. To get auto.arima to match the results of the “arima” function, use the appropriate
+values of the “d=…” option and “seasonal=…” option, plus these options: ic=“aic”,
+approximation=FALSE, trace=TRUE, stepwise=FALSE, and method=“ML”. Report the
+order (p,d,q), the values of all coefficients, and the AIC for the best model.**
+
+```{r}
+Q10 <- auto.arima(realgdp.ts,
+  d = 1,
+  seasonal = FALSE,
+  ic = "aic",
+  approximation = FALSE,
+  trace = TRUE,
+  stepwise = FALSE,
+  method = "ML"
+)
+```
+**Report the order (p,d,q), the values of all coefficients, and the AIC for the best model.**\
+*A: The order is {4,1,0} with drift and the aic is 1005.15\
+See full results below:*
+
+```{r}
+Q10
+```
+
+**11. Analyze the correlogram of the residuals for the best version of the model from #10**\
+*A: The correlogram falls immediately, only with spikes at lag 1 and lag 2.*
+
+```{r}
+acf(residuals(Q10))
+```
+
+## Seasonal ARIMA [12-16]
+**12. Seasonally-difference the data one time and plot the resulting series.**
+
+```{r}
+Q12 <- arima(realgdp.ts, order = c(0, 1, 0), method = "ML")
+Q12
+```
+
+**13. Use the “arima” function to fit an ARIMA(1,0,0)(2,1,0) 4 model to the data.\
+Report values of all coefficients and the AIC for the model.**
+
+```{r}
+Q13 <- arima(realgdp.ts,
+  order = c(1, 0, 0),
+  seasonal = list(
+    order = c(2, 1, 0),
+    period = 4),
+  method = "ML"
+)
+```
+**Report values of all coefficients and the AIC for the model.**\
+*A: The aic is 953.27.\
+Full results below:*
+
+```{r}
+Q13
+```
+
+**14.Use the “auto.arima” function to determine the best ARIMA(p,d,q)(P,D,Q)4
+model for the data. To get auto.arima to match the results of the “arima” function, use the
+appropriate values of the “d=…” option and “seasonal=…” option, plus these options:
+ic=“aic”, approximation=FALSE, trace=TRUE, stepwise=FALSE, and method=“ML”.\
+Report the order (p,d,q)(P,D,Q)4 , the values of all coefficients, and the AIC for the best
+model.**
+
+```{r}
+Q14 <- auto.arima(realgdp.ts,
+  d = 1,
+  seasonal = TRUE,
+  ic = "aic",
+  approximation = FALSE,
+  trace = TRUE,
+  stepwise = FALSE,
+  method = "ML"
+)
+```
+
+**Report the order (p,d,q)(P,D,Q)4 , the values of all coefficients, and the AIC for the best model.**\
+*A: The order is {1,1,1}{0,1,1} and the aic is 927.08.\
+Full results below:*
+
+```{r}
+Q14
+```
+
+**15. Analyze the correlogram of the residuals for the best version of the model from #14.**\
+*A: This correlogram is very good, there are no periods that get close to exceeding the threshold.*
+
+```{r}
+acf(residuals(Q14))
+```
+
+**16. Forecast the series through 2028:Q2 using the “forecast” function with only a
+95% prediction interval. How realistic do you think your forecast is?**\
+*A: I think that this forecast is a very reasonable forecast of future data given the past.*
+
+
+```{r}
+plot(forecast(Q14, h = 28, level = 95))
+```
+
+## Misc [17]
+
+**17. Using the Air Passengers series that we have used previously (accessible using
+data(“AirPassengers”)), demonstrate using log transformation and differencing how it
+can be transformed into a series that is both mean and variance stationary.**
+
+```{r}
+AP <- AirPassengers
+
+AP.ts <- ts(AP, start = c(1949, 1), frequency = 12)
+
+log_AP.ts <- log10(AP.ts)
+
+AP.ts.diff <- diff(log_AP.ts, differences = 1)
+
+plot(AP.ts.diff)
+```
+

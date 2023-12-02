@@ -2,7 +2,7 @@
 title: "HW1 - Nathan Riley"
 output: 
 html_document:
-css: "style.css"   
+css: "styles.css"   
 ---
 
 # Introduction to R
